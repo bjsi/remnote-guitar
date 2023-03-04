@@ -47,7 +47,7 @@ const config = {
       {
         test: /\.css$/i,
         use: [
-          isDevelopment ? "style-loader" : MiniCssExtractPlugin.loader,
+          isDevelopment ? 'style-loader' : MiniCssExtractPlugin.loader,
           { loader: 'css-loader', options: { url: false } },
           'postcss-loader',
         ],
@@ -55,9 +55,11 @@ const config = {
     ],
   },
   plugins: [
-    isDevelopment ? undefined : new MiniCssExtractPlugin({
-      filename: '[name].css',
-    }),
+    isDevelopment
+      ? undefined
+      : new MiniCssExtractPlugin({
+          filename: '[name].css',
+        }),
     new HtmlWebpackPlugin({
       templateContent: `
       <body></body>
@@ -82,15 +84,27 @@ const config = {
     }),
     new BannerPlugin({
       banner: (file) => {
-        return !file.chunk.name.includes(SANDBOX_SUFFIX) ? 'const IMPORT_META=import.meta;' : '';
+        if (
+          file.filename?.toLowerCase().includes('worker') ||
+          file.chunk.name?.toLowerCase().includes('alphaTab')
+        ) {
+          return '';
+        } else if (file.chunk.name?.includes(SANDBOX_SUFFIX)) {
+          return '';
+        } else {
+          return 'const IMPORT_META=import.meta;';
+        }
       },
       raw: true,
     }),
     new CopyPlugin({
       patterns: [
-        {from: 'public', to: ''},
-        {from: 'README.md', to: ''}
-      ]
+        { from: 'public', to: '' },
+        { from: 'README.md', to: '' },
+        { from: 'node_modules/@coderline/alphatab/dist/soundfont', to: 'soundfont' },
+        { from: 'node_modules/@coderline/alphatab/dist/font', to: 'font' },
+        { from: 'node_modules/@coderline/alphatab/dist/alphaTab.mjs', to: '' },
+      ],
     }),
     fastRefresh,
   ].filter(Boolean),

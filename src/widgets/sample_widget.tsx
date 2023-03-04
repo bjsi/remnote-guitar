@@ -1,19 +1,49 @@
-import { usePlugin, renderWidget, useTracker } from '@remnote/plugin-sdk';
+import { usePlugin, renderWidget } from '@remnote/plugin-sdk';
+import { AlphaTabApi, LogLevel, Settings } from '@coderline/alphatab';
+import React from 'react';
+import { loadScript } from '../lib/load';
+
+const useAlphaTab = (ref: HTMLDivElement | null) => {
+  const plugin = usePlugin();
+  const [api, setApi] = React.useState<AlphaTabApi | null>(null);
+  React.useEffect(() => {
+    if (ref) {
+      const eff = async () => {
+        await loadScript(
+          'https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.2.3/dist/alphaTab.min.js'
+        );
+        const api = new window.alphaTab.AlphaTabApi(ref, {
+          // any settings go here
+          core: {
+            fontDirectory: `${plugin.rootURL}font/`,
+            file: 'https://www.alphatab.net/files/canon.gp',
+            // scriptFile,
+            logLevel: LogLevel.Info,
+          },
+          player: {
+            enablePlayer: true,
+            soundFont: `${plugin.rootURL}soundfont/sonivox.sf2`,
+            //scrollElement: wrapper.querySelector('.at-viewport') // this is the element to scroll during playback
+          },
+        } as Settings);
+        setApi(api);
+      };
+      eff();
+    }
+  }, [ref]);
+  return api;
+};
 
 export const SampleWidget = () => {
   const plugin = usePlugin();
-
-  let name = useTracker(() => plugin.settings.getSetting<string>('name'));
-  let likesPizza = useTracker(() => plugin.settings.getSetting<boolean>('pizza'));
-  let favoriteNumber = useTracker(() => plugin.settings.getSetting<number>('favorite-number'));
+  const [ref, setRef] = React.useState<HTMLDivElement | null>(null);
+  const api = useAlphaTab(ref);
 
   return (
-    <div className="p-2 m-2 rounded-lg rn-clr-background-light-positive rn-clr-content-positive">
-      <h1 className="text-xl">Sample Plugin</h1>
-      <div>
-        Hi {name}, you {!!likesPizza ? 'do' : "don't"} like pizza and your favorite number is{' '}
-        {favoriteNumber}!
-      </div>
+    <div>
+      {' '}
+      <button onClick={() => api?.play()}>play</button>
+      <div ref={setRef}></div>
     </div>
   );
 };
