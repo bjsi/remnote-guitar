@@ -101,6 +101,7 @@ const config = {
       patterns: [
         { from: 'public', to: '' },
         { from: 'README.md', to: '' },
+        { from: 'src/App.css', to: '' },
         { from: 'node_modules/@coderline/alphatab/dist/soundfont', to: 'soundfont' },
         { from: 'node_modules/@coderline/alphatab/dist/font', to: 'font' },
         { from: 'node_modules/@coderline/alphatab/dist/alphaTab.mjs', to: '' },
