@@ -2,11 +2,12 @@ import { LayoutMode, LogLevel, Settings, StaveProfile, TabRhythmMode } from '@co
 import { RNPlugin } from '@remnote/plugin-sdk';
 import { NotationElement } from './types';
 
+window.alphaTab;
+
 export const createAlphatabApiSettings = (plugin: RNPlugin) => ({
   // any settings go here
   core: {
     fontDirectory: `${plugin.rootURL}font/`,
-    file: 'https://www.alphatab.net/files/canon.gp',
     logLevel: LogLevel.Info,
   } as Settings['core'],
   player: {

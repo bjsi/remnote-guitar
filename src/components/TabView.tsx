@@ -1,70 +1,37 @@
-import {
-  usePlugin,
-  renderWidget,
-  LoadingSpinner,
-  useAPIEventListener,
-  AppEvents,
-} from '@remnote/plugin-sdk';
-import {
-  AlphaTabApi,
-  LayoutMode,
-  LogLevel,
-  Settings,
-  StaveProfile,
-  TabRhythmMode,
-} from '@coderline/alphatab';
+import { LoadingSpinner, usePlugin, useTracker } from '@remnote/plugin-sdk';
 import React from 'react';
-import { loadScript } from '../lib/load';
-import { NotationElement } from '../lib/types';
-import { createAlphatabApiSettings } from '../lib/alphatab';
-import { PlayerButtons } from '../components/PlayerButtons';
+import { guitarPowerupCode, tabDataSlotCode } from '../lib/consts';
+import { useGuitarTabRem } from '../lib/guitarTabRem';
+import { useAlphaTab } from '../lib/useAlphaTab';
+import { PlayerButtons } from './PlayerButtons';
 
-const useAlphaTab = (ref: HTMLDivElement | null) => {
-  const plugin = usePlugin();
-  const [api, setApi] = React.useState<AlphaTabApi | null>(null);
-  const setColor = (darkMode: boolean) => {
-    const color = darkMode ? '#ffffff' : '#00000';
-    if (!api) return;
-    api.settings.display.resources.mainGlyphColor.rgba = color;
-    api.settings.display.resources.secondaryGlyphColor.rgba = color;
-    api.settings.display.resources.barNumberColor.rgba = color;
-    api.updateSettings();
-  };
-  useAPIEventListener(AppEvents.setDarkMode, undefined, ({ darkMode }) => {
-    setColor(darkMode);
-  });
-  React.useEffect(() => {
-    if (ref) {
-      const eff = async () => {
-        // there's some weirdness with the way the alphatab library is loaded
-        // requires webworkers and doesn't play nice with webpack
-        await loadScript(
-          'https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.2.3/dist/alphaTab.min.js'
-        );
-        const api: AlphaTabApi = new window.alphaTab.AlphaTabApi(
-          ref,
-          createAlphatabApiSettings(plugin)
-        );
-        setColor(true);
-        setApi(api);
-      };
-      eff();
-    }
-  }, [ref]);
-  return api;
-};
+interface TabViewProps {
+  remId: string;
+}
 
-export const SampleWidget = () => {
+export const TabView = (props: TabViewProps) => {
   const plugin = usePlugin();
   const [ref, setRef] = React.useState<HTMLDivElement | null>(null);
   const api = useAlphaTab(ref);
   const [soundFontLoaded, setSoundFontLoaded] = React.useState(false);
   const [scoreLoaded, setScoreLoaded] = React.useState(false);
-  api?.soundFontLoaded.on(() => {
+  const remAndData = useGuitarTabRem(props.remId);
+
+  React.useEffect(() => {
+    if (!remAndData || !api || scoreLoaded) return;
+    const encoder = new TextEncoder();
+    const data = encoder.encode(remAndData.tabData);
+    let score = window.alphaTab.importer.ScoreLoader.loadScoreFromBytes(data);
+    api.load(score);
+  }, [remAndData, api]);
+
+  if (!api || remAndData == null) return null;
+
+  api.soundFontLoaded.on(() => {
     console.log('SoundFont Loaded !!!');
     setSoundFontLoaded(true);
   });
-  api?.scoreLoaded.on(() => {
+  api.scoreLoaded.on(() => {
     console.log('Score Loaded !!!');
     setScoreLoaded(true);
   });
@@ -115,5 +82,3 @@ export const SampleWidget = () => {
     </div>
   );
 };
-
-renderWidget(SampleWidget);
