@@ -19,5 +19,6 @@ Learn guitar with RemNote!
 - You can tag a Rem as a guitar tab by using the `Tag As Guitar Tab` command in the Omnibar.
 - Press the guitar icon on the right side of the Rem to upload a tab.
 - The tab will be loaded in a new pane on the right side of the screen.
+- Supported functions: Play, pause, loop, metronome, count-in, set speed, extract section.
 
 ![tab-player](https://raw.githubusercontent.com/bjsi/remnote-guitar/main/img/tab-player.png)
