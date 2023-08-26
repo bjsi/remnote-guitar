@@ -2,7 +2,9 @@ import { LoadingSpinner, usePlugin, useTracker } from '@remnote/plugin-sdk';
 import React from 'react';
 import { guitarPowerupCode, tabDataSlotCode } from '../lib/consts';
 import { useGuitarTabRem } from '../lib/guitarTabRem';
+import { formatRemTitle } from '../lib/textFormatting';
 import { useAlphaTab } from '../lib/useAlphaTab';
+import { throttle } from '../lib/utils';
 import { PlayerButtons } from './PlayerButtons';
 
 interface TabViewProps {
@@ -19,65 +21,93 @@ export const TabView = (props: TabViewProps) => {
 
   React.useEffect(() => {
     if (!remAndData || !api || scoreLoaded) return;
-    const encoder = new TextEncoder();
-    const data = encoder.encode(remAndData.tabData);
-    let score = window.alphaTab.importer.ScoreLoader.loadScoreFromBytes(data);
+    const json = JSON.parse(remAndData.tabData || '[]');
+    const uint8Array = new Uint8Array(json);
+    let score = window.alphaTab.importer.ScoreLoader.loadScoreFromBytes(uint8Array);
+    if (!remAndData.rem.text || remAndData.rem.text.length == 0) {
+      remAndData.rem.setText([formatRemTitle(score)]);
+    }
     api.load(score);
-  }, [remAndData, api]);
+  }, [remAndData, api, scoreLoaded]);
 
-  if (!api || remAndData == null) return null;
+  const viewportRef = React.useRef<HTMLDivElement>(null);
 
-  api.soundFontLoaded.on(() => {
-    console.log('SoundFont Loaded !!!');
-    setSoundFontLoaded(true);
-  });
-  api.scoreLoaded.on(() => {
-    console.log('Score Loaded !!!');
-    setScoreLoaded(true);
-  });
+  React.useEffect(() => {
+    const onSoundFontLoaded = () => {
+      console.log('SoundFont Loaded !!!');
+      setSoundFontLoaded(true);
+    };
+
+    const onScoreLoaded = () => {
+      console.log('Score Loaded !!!');
+      setScoreLoaded(true);
+    };
+
+    const [onPositionChanged] = throttle(() => {
+      const caret = viewportRef.current?.querySelector('.at-cursor-beat');
+      const container = viewportRef.current;
+      if (!caret || !container) return;
+      caret.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    }, 300);
+
+    if (api) {
+      api.soundFontLoaded.on(onSoundFontLoaded);
+      api.scoreLoaded.on(onScoreLoaded);
+      api.playerPositionChanged.on(onPositionChanged);
+    }
+    return () => {
+      api?.soundFontLoaded.off(onScoreLoaded);
+      api?.scoreLoaded.off(onScoreLoaded);
+      api?.playerPositionChanged.off(onPositionChanged);
+    };
+  }, [api]);
+
+  const setInitSettings = React.useRef(false);
+
+  React.useEffect(() => {
+    if (!remAndData || !api || !scoreLoaded || setInitSettings) return;
+    // hack
+    api.play();
+    api.pause();
+    if (remAndData?.playbackSpeed != null) {
+      api!.playbackSpeed = remAndData.playbackSpeed;
+    }
+
+    if (remAndData?.playbackRange) {
+      api!.isLooping = true;
+      api!.playbackRange = remAndData.playbackRange;
+    }
+    // @ts-ignore
+    setInitSettings.current = true;
+  }, [scoreLoaded, soundFontLoaded, remAndData, setInitSettings.current]);
 
   const loading = !soundFontLoaded || !scoreLoaded || !api;
   return (
-    <div className="at-wrap">
+    <div
+      onKeyDown={(event) => {
+        // backspace
+        if (event.key === 'Backspace') {
+          api?.stop();
+          viewportRef.current?.scrollTo({
+            top: 0,
+            behavior: 'smooth',
+          });
+        }
+      }}
+      className="at-wrap"
+    >
       <div className="at-content">
-        <div className="at-sidebar">Track selector will go here</div>
-        <div className="at-viewport">
+        <div ref={viewportRef} className="at-viewport">
           <div ref={setRef} className="at-main">
             {loading && <LoadingSpinner></LoadingSpinner>}
           </div>
         </div>
       </div>
       <div className="at-controls">
-        {!loading && <PlayerButtons api={api} />}
-        <div className="at-controls-right">
-          <a className="btn toggle at-count-in">⌛</a>
-          <a className="btn toggle at-metronome">⏰</a>
-          <a className="btn toggle at-loop">🔁</a>
-          <div className="at-zoom">
-            <i className="fas fa-search"></i>
-            <select>
-              <option value="25">25%</option>
-              <option value="50">50%</option>
-              <option value="75">75%</option>
-              <option value="90">90%</option>
-              <option value="100" selected>
-                100%
-              </option>
-              <option value="110">110%</option>
-              <option value="125">125%</option>
-              <option value="150">150%</option>
-              <option value="200">200%</option>
-            </select>
-          </div>
-          <div className="at-layout">
-            <select>
-              <option value="horizontal">Horizontal</option>
-              <option value="page" selected>
-                Page
-              </option>
-            </select>
-          </div>
-        </div>
+        {!loading && remAndData && <PlayerButtons api={api} remAndData={remAndData} />}
       </div>
     </div>
   );

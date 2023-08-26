@@ -6,7 +6,12 @@ import {
 } from '@remnote/plugin-sdk';
 import '../style.css';
 import '../App.css';
-import { guitarPowerupCode, tabDataSlotCode } from '../lib/consts';
+import {
+  guitarPowerupCode,
+  playbackRangeSlotCode,
+  playbackSpeedSlotCode,
+  tabDataSlotCode,
+} from '../lib/consts';
 
 async function onActivate(plugin: ReactRNPlugin) {
   await plugin.app.registerPowerup(
@@ -21,6 +26,18 @@ async function onActivate(plugin: ReactRNPlugin) {
           name: 'Tab Data',
           propertyType: PropertyType.TEXT,
           onlyProgrammaticModifying: true,
+        },
+        {
+          code: playbackRangeSlotCode,
+          hidden: true,
+          name: 'Playback Range',
+          propertyType: PropertyType.TEXT,
+          onlyProgrammaticModifying: true,
+        },
+        {
+          code: playbackSpeedSlotCode,
+          name: 'Playback Speed',
+          propertyType: PropertyType.NUMBER,
         },
       ],
     }

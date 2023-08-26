@@ -1,8 +1,13 @@
-import { LayoutMode, LogLevel, Settings, StaveProfile, TabRhythmMode } from '@coderline/alphatab';
 import { RNPlugin } from '@remnote/plugin-sdk';
-import { NotationElement } from './types';
-
-window.alphaTab;
+import { Settings } from '../types/alphaTab';
+import {
+  LayoutMode,
+  LogLevel,
+  NotationElement,
+  ScrollMode,
+  StaveProfile,
+  TabRhythmMode,
+} from './types';
 
 export const createAlphatabApiSettings = (plugin: RNPlugin) => ({
   // any settings go here
@@ -13,6 +18,8 @@ export const createAlphatabApiSettings = (plugin: RNPlugin) => ({
   player: {
     enablePlayer: true,
     soundFont: `${plugin.rootURL}soundfont/sonivox.sf2`,
+    scrollMode: ScrollMode.Continuous,
+    enableElementHighlighting: true,
     //scrollElement: wrapper.querySelector('.at-viewport') // this is the element to scroll during playback
   } as Settings['player'],
   // @ts-ignore
@@ -28,7 +35,7 @@ export const createAlphatabApiSettings = (plugin: RNPlugin) => ({
     },
   } as Settings['display'],
   notation: {
-    rhythmMode: TabRhythmMode.ShowWithBars,
+    rhythmMode: TabRhythmMode.Hidden,
     elements: new Map([
       [NotationElement.ScoreTitle, false],
       [NotationElement.ScoreSubTitle, false],
@@ -39,6 +46,7 @@ export const createAlphatabApiSettings = (plugin: RNPlugin) => ({
       [NotationElement.ScoreWordsAndMusic, false],
       [NotationElement.ScoreCopyright, false],
       [NotationElement.GuitarTuning, true],
+      [NotationElement.EffectLetRing, false],
     ]),
   } as Settings['notation'],
 });

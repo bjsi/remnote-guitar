@@ -1,3 +1,87 @@
+export enum LogLevel {
+  /**
+   * No logging
+   */
+  None = 0,
+  /**
+   * Debug level (internal details are displayed).
+   */
+  Debug = 1,
+  /**
+   * Info level (only important details are shown)
+   */
+  Info = 2,
+  /**
+   * Warning level
+   */
+  Warning = 3,
+  /**
+   * Error level.
+   */
+  Error = 4,
+}
+
+export interface PlaybackRange {
+  /**
+   * The position in midi ticks from where the song should start.
+   */
+  startTick: number;
+  /**
+   * The position in midi ticks to where the song should be played.
+   */
+  endTick: number;
+}
+
+export enum StaveProfile {
+  /**
+   * The profile is auto detected by the track configurations.
+   */
+  Default = 0,
+  /**
+   * Standard music notation and guitar tablature are rendered.
+   */
+  ScoreTab = 1,
+  /**
+   * Only standard music notation is rendered.
+   */
+  Score = 2,
+  /**
+   * Only guitar tablature is rendered.
+   */
+  Tab = 3,
+  /**
+   * Only guitar tablature is rendered, but also rests and time signatures are not shown.
+   * This profile is typically used in multi-track scenarios.
+   */
+  TabMixed = 4,
+}
+
+export enum TabRhythmMode {
+  /**
+   * Rhythm notation is hidden.
+   */
+  Hidden = 0,
+  /**
+   * Rhythm notation is shown with individual beams per beat.
+   */
+  ShowWithBeams = 1,
+  /**
+   * Rhythm notation is shown and behaves like normal score notation with connected bars.
+   */
+  ShowWithBars = 2,
+}
+
+export enum LayoutMode {
+  /**
+   * Bars are aligned in rows using a fixed width.
+   */
+  Page = 0,
+  /**
+   * Bars are aligned horizontally in one row
+   */
+  Horizontal = 1,
+}
+
 export enum PlayerState {
   /**
    * Player is paused
@@ -7,6 +91,21 @@ export enum PlayerState {
    * Player is playing
    */
   Playing = 1,
+}
+
+export enum ScrollMode {
+  /**
+   * Do not scroll automatically
+   */
+  Off = 0,
+  /**
+   * Scrolling happens as soon the offsets of the cursors change.
+   */
+  Continuous = 1,
+  /**
+   * Scrolling happens as soon the cursors exceed the displayed range.
+   */
+  OffScreen = 2,
 }
 
 export enum NotationElement {

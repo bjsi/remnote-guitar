@@ -37,16 +37,17 @@ export function EditorButton() {
 
             reader.onload = async (readerEvent) => {
               const fileText = readerEvent.target?.result;
-              if (typeof fileText === 'string') {
-                console.log('File text:', fileText);
-                await remAndData?.rem.setPowerupProperty(guitarPowerupCode, tabDataSlotCode, [
-                  fileText,
-                ]);
+              if (fileText instanceof ArrayBuffer && remAndData?.rem) {
+                const uint8Array = Array.from(new Uint8Array(fileText));
+                const json = JSON.stringify(uint8Array);
+                await remAndData.rem.setPowerupProperty(guitarPowerupCode, tabDataSlotCode, [json]);
+                await plugin.window.openWidgetInPane('pane_guitar_tab', {
+                  remId: remAndData.rem._id,
+                });
               }
             };
 
-            // Read the file as text
-            reader.readAsText(file);
+            reader.readAsArrayBuffer(file);
           } else {
             console.log('Invalid file extension');
           }
@@ -59,7 +60,7 @@ export function EditorButton() {
           ref.current?.click();
         }}
       >
-        hi
+        🎸
       </button>
     </>
   );

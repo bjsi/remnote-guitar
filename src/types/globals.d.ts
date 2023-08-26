@@ -1,4 +1,4 @@
-import alphaTab from '@coderline/alphatab';
+import alphaTab from './alphaTab';
 
 declare global {
   interface Window {

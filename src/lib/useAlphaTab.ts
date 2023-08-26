@@ -27,7 +27,7 @@ export const useAlphaTab = (ref: HTMLDivElement | null) => {
           'https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.2.3/dist/alphaTab.min.js'
         );
         const api = new window.alphaTab.AlphaTabApi(ref, createAlphatabApiSettings(plugin));
-        setColor(true);
+        setColor(false);
         setApi(api);
       };
       eff();
